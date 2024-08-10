@@ -1,14 +1,24 @@
 from typing import Optional, List
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 from fastapi import UploadFile
 import random
-from pydantic import BaseModel, EmailStr
 
 class Admin_schema(BaseModel):
     name: str
     password: str
 
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserResponse(UserBase):
+    id: int
+
+    class Config:
+        from_attributes = True
 
 
 class Logged_schema(BaseModel):
@@ -59,7 +69,7 @@ class ReservationDetailsSchema(BaseModel):
     extra_info: str | None = None
 
 class CommentSchema(BaseModel):
-    user_id: int
+    user_name: str
     comment_text: str
     date: datetime
     show_comment: bool

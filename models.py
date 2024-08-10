@@ -6,13 +6,28 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
 
+from pydantic import BaseModel
+
 
 
 Base = declarative_base()
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
+class TokenData(BaseModel):
+    username: str | None = None
+class Admin(Base):
+    __tablename__ = "Admin"
+    id = Column('id', Integer, primary_key=True, nullable=False)
+    name = Column("name",String, nullable=False)
+    password = Column("Password", String, nullable=False)
 
-
+    def __init__(self, id: int, name: str, password: str):
+        self.id = id
+        self.name = name
+        self.password = password
 
 class User(Base):
 
@@ -21,20 +36,18 @@ class User(Base):
     id = Column('user_id', Integer, primary_key=True, nullable=False)
     name = Column("full_name", String, nullable=False)
     age = Column("age", Integer,nullable=False)
-
+ 
     mail = Column("user_mail", String, nullable=True)
     phone = Column("user_phone", String, nullable=False)
-    def __init__(self, id: int, name: str, mail: str, phone: str):
+    def __init__(self, id: int, name: str,user_age: int, mail: str, phone: str):
         self.id = id
         self.name = name
+        self.age = user_age
         self.mail = mail
         self.phone = phone
 
     def __repr__(self):
         return f"id:{self.id} name:{self.name} mail:{self.mail} phone:{self.phone}"
-
-
-
 
 
 class Car(Base):
@@ -109,6 +122,24 @@ class Picture(Base):
     def __repr__(self):
         return f"id:{self.picture_id} car_id:{self.car_id} path:{self.path}, show_index:{self.show_index}"
 
+class Video(Base):
+
+    __tablename__ = "Video"
+
+    video_id = Column('video_id', Integer, nullable=False, primary_key=True)
+    reservation_id = Column("reservation_id", Integer, ForeignKey("Reservation.reservation_id"), nullable=False)
+    path = Column('path', String, nullable=False)
+
+    car = relationship('Reservation', backref='Video')
+
+    def __init__(self, id: int, reservation_id: int, path: str, show_index: int ):
+        self.video_id = id
+        self.reservation_id = reservation_id
+        self.path = path
+        self.show_index = show_index
+
+    def __repr__(self):
+        return f"id:{self.video_id} car_id:{self.reservation_id} path:{self.path}, show_index:{self.show_index}"
 
 class Reservation(Base):
 
@@ -117,6 +148,7 @@ class Reservation(Base):
     id = Column("reservation_id", Integer, nullable=False, primary_key=True)
     user_id = Column("user_id", Integer, ForeignKey('User.user_id'), nullable=False)
     car_id = Column("car_id", Integer, ForeignKey("Car.car_id"), nullable=False)
+
     price = Column("price", Integer)
     approved = Column("approved", Boolean)
 
@@ -184,7 +216,7 @@ class Comment(Base):
         return f"id:{self.id} user_id:{self.user_id} comment_text:{self.comment_text} comment_date:{self.date} comment_show:{self.show_comment}"
 
 
-# connection_string = "sqlite:///ushba2.db"
+# connection_string = "sqlite:///ushba3.db"
 # engine = create_engine(connection_string, echo=True)
 # Base.metadata.create_all(bind=engine, checkfirst=True)
 # file already created do not uncomment it blux  !!!!!
