@@ -58,7 +58,7 @@ def send_reservation(info: str):
     )
 
     print(message.sid)
-logged = Logged_schema()
+# logged = Logged_schema()
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = FastAPI()
@@ -198,7 +198,7 @@ def save_files(files: list, carid: int):
 # ----------------------------------------------------------------
 @app.get("/")
 def main():
-    return {"pictures":[FileResponse('./pictures/5261G590271740.jpg'),FileResponse('./pictures/82001G272637030.jpg')]}
+    return {"info":"main_page"}
 @app.get('/comments')
 def main_page():
     commnets = dbsession.query(Comment).where(Comment.show_comment == True).all()
@@ -226,13 +226,15 @@ async def add_comment(name: str,number:str, comment: str):
 @app.get('/cars')
 def cars():
     cars = dbsession.query(Car).all()
+    print(type(cars[0]))
     return {"cars": cars}
 
 @app.get('/cars/{carID}')
 def car(carid: int):
     car = dbsession.query(Car).where(Car.id == carid).first()
     pics = dbsession.query(Picture).where(Picture.car_id == carid).all()
-    return {"car":car,"pics":pics}
+
+    return {"car":car,"pics":[i.path for i in pics]}
 
 
 
@@ -323,8 +325,9 @@ def admin_all_cars(current_admin: str = Depends(get_current_admin)):
 def admin_all_cars(carid: int, current_admin: str = Depends(get_current_admin)):
 
     car = dbsession.query(Car).where(Car.id==carid).one()
+    pics = dbsession.query(Picture).where(Picture.car_id == carid).all()
 
-    return {"car": car}
+    return {"car": car, "pics": [i.path for i in pics]}
     
 @app.post('/admin/car')
 def add_cars(   
