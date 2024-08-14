@@ -15,7 +15,9 @@ from twilio.rest import Client
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+
+from jose import jwt
+from jose.exceptions import JWTError
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
@@ -24,7 +26,8 @@ import smtplib
 from email.message import EmailMessage
 # telegram libraries
 import asyncio
-import telegram
+# import telegram
+# from telegram import Bot
 # mail sender functionality from
 def send_email( subject, body, to):
     user = 'giorgimaxara5@gmail.com'
@@ -78,17 +81,17 @@ SECRET_KEY = "FA7BACB8BAE16166738B75324BD7E"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # telegram bot token----------------------
-bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
-bot = telegram.Bot(token=bot_token)
-# telegram bot function
-async def send_message_to_user(user_id, message):
-    try:
-        bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
+# bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
+# bot = telegram.Bot(token=bot_token)
+# # telegram bot function
+# async def send_message_to_user(user_id, message):
+#     try:
+#         bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
 
-        await bot.send_message(chat_id=user_id, text=message)
-        print("Message sent successfully!")
-    except telegram.TelegramError as e:
-        print(f"Error sending message: {e}")
+#         await bot.send_message(chat_id=user_id, text=message)
+#         print("Message sent successfully!")
+#     except telegram.TelegramError as e:
+#         print(f"Error sending message: {e}")
 
 # OAuth2 scheme for login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="admin_gate")
@@ -279,7 +282,7 @@ async def reservation(
             user_id = 5937741258
             await send_message_to_user(user_id, reservation_info)
             send_email("მანქანის ჯავშანი", reservation_info, "ninikheladze9@gmail.com")
-            send_reservation(reservation_info)
+            # send_reservation(reservation_info)
 
         except Exception:
             print("message is not send")
