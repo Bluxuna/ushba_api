@@ -11,7 +11,7 @@ from schemas import *
 from settings import UPLOAD_FOLDER, FOLDER_PATH, user,password
 from extentions import get_hash
 import shutil
-from twilio.rest import Client
+# from twilio.rest import Client
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -20,44 +20,45 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
 # mail libraries
-import smtplib
-from email.message import EmailMessage
+# import smtplib
+# from email.message import EmailMessage
 # telegram libraries
 import asyncio
 import telegram
+# from telegram import
 # mail sender functionality from
-def send_email( subject, body, to):
-    user = 'giorgimaxara5@gmail.com'
-    password = 'tmim ltzc wlcp nvvt'
+# def send_email( subject, body, to):
+#     user = 'giorgimaxara5@gmail.com'
+#     password = 'tmim ltzc wlcp nvvt'
+#
+#     msg = EmailMessage()
+#     msg['from'] = user
+#     msg['to'] = to
+#     msg['Subject'] = subject
+#     msg.set_content(body)
+#     body_bytes = msg.as_bytes()
+#     # view = memoryview(body_bytes)
+#     # byte_view = view.cast("B")
+#
+#     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+#         smtp.starttls()
+#         smtp.login(user, password)  # Replace with your password
+#         smtp.send_message(msg)
+#     print("mail send")
 
-    msg = EmailMessage()
-    msg['from'] = user
-    msg['to'] = to
-    msg['Subject'] = subject
-    msg.set_content(body)
-    body_bytes = msg.as_bytes()
-    # view = memoryview(body_bytes)
-    # byte_view = view.cast("B")
 
-    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-        smtp.starttls()
-        smtp.login(user, password)  # Replace with your password
-        smtp.send_message(msg)
-    print("mail send")
-
-
-def send_reservation(info: str):
-    
-    account_sid = 'AC78b6305c73bc1aa55bbfc599ee2cf982'
-    auth_token = 'a97074a015fe7577345930434552d5f1'
-    client = Client(account_sid, auth_token)
-    message = client.messages.create(
-        from_='whatsapp:+14155238886',
-        body=f'{info}',
-        to='whatsapp:+995598311309'
-    )
-
-    print(message.sid)
+# def send_reservation(info: str):
+#
+#     account_sid = 'AC78b6305c73bc1aa55bbfc599ee2cf982'
+#     auth_token = 'a97074a015fe7577345930434552d5f1'
+#     client = Client(account_sid, auth_token)
+#     message = client.messages.create(
+#         from_='whatsapp:+14155238886',
+#         body=f'{info}',
+#         to='whatsapp:+995598311309'
+#     )
+#
+#     print(message.sid)
 # logged = Logged_schema()
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -80,6 +81,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # telegram bot token----------------------
 bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
 bot = telegram.Bot(token=bot_token)
+
 # telegram bot function
 async def send_message_to_user(user_id, message):
     try:
@@ -89,7 +91,8 @@ async def send_message_to_user(user_id, message):
         print("Message sent successfully!")
     except telegram.TelegramError as e:
         print(f"Error sending message: {e}")
-
+#
+# ---------------------------------------------
 # OAuth2 scheme for login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="admin_gate")
 
@@ -278,8 +281,8 @@ async def reservation(
         try:
             user_id = 5937741258
             await send_message_to_user(user_id, reservation_info)
-            send_email("მანქანის ჯავშანი", reservation_info, "ninikheladze9@gmail.com")
-            send_reservation(reservation_info)
+            # send_email("მანქანის ჯავშანი", reservation_info, "ninikheladze9@gmail.com")
+            # send_reservation(reservation_info)
 
         except Exception:
             print("message is not send")
