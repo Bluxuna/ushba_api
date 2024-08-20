@@ -11,7 +11,7 @@ from schemas import *
 from settings import UPLOAD_FOLDER, FOLDER_PATH, user,password
 from extentions import get_hash
 import shutil
-from twilio.rest import Client
+# from twilio.rest import Client
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -26,7 +26,7 @@ from fastapi.responses import FileResponse
 # from email.message import EmailMessage
 # telegram libraries
 import asyncio
-# import telegram
+import telegram
 # from telegram import Bot
 # mail sender functionality from
 # def send_email( subject, body, to):
@@ -49,18 +49,18 @@ import asyncio
 #     print("mail send")
 
 
-def send_reservation(info: str):
+# def send_reservation(info: str):
     
-    account_sid = 'AC78b6305c73bc1aa55bbfc599ee2cf982'
-    auth_token = 'a97074a015fe7577345930434552d5f1'
-    client = Client(account_sid, auth_token)
-    message = client.messages.create(
-        from_='whatsapp:+14155238886',
-        body=f'{info}',
-        to='whatsapp:+995598311309'
-    )
+#     account_sid = 'AC78b6305c73bc1aa55bbfc599ee2cf982'
+#     auth_token = 'a97074a015fe7577345930434552d5f1'
+#     client = Client(account_sid, auth_token)
+#     message = client.messages.create(
+#         from_='whatsapp:+14155238886',
+#         body=f'{info}',
+#         to='whatsapp:+995598311309'
+#     )
 
-    print(message.sid)
+#     print(message.sid)
 # logged = Logged_schema()
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -84,14 +84,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
 # bot = telegram.Bot(token=bot_token)
 # # telegram bot function
-# async def send_message_to_user(user_id, message):
-#     try:
-#         bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
+async def send_message_to_user(user_id, message):
+    try:
+        bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
+         bot = telegram.Bot(token=bot_token)
 
-#         await bot.send_message(chat_id=user_id, text=message)
-#         print("Message sent successfully!")
-#     except telegram.TelegramError as e:
-#         print(f"Error sending message: {e}")
+        await bot.send_message(chat_id=user_id, text=message)
+        print("Message sent successfully!")
+    except telegram.TelegramError as e:
+        print(f"Error sending message: {e}")
 
 # OAuth2 scheme for login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="admin_gate")
