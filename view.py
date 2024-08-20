@@ -87,7 +87,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 async def send_message_to_user(user_id, message):
     try:
         bot_token = '7369046862:AAFZfY9rd0Xrf6K6HDBTs788q8E3hBPV__M'
-         bot = telegram.Bot(token=bot_token)
+        bot = telegram.Bot(token=bot_token)
 
         await bot.send_message(chat_id=user_id, text=message)
         print("Message sent successfully!")
