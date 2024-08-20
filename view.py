@@ -22,31 +22,31 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
 # mail libraries
-import smtplib
-from email.message import EmailMessage
+# import smtplib
+# from email.message import EmailMessage
 # telegram libraries
 import asyncio
 # import telegram
 # from telegram import Bot
 # mail sender functionality from
-def send_email( subject, body, to):
-    user = 'giorgimaxara5@gmail.com'
-    password = 'tmim ltzc wlcp nvvt'
+# def send_email( subject, body, to):
+#     user = 'giorgimaxara5@gmail.com'
+#     password = 'tmim ltzc wlcp nvvt'
 
-    msg = EmailMessage()
-    msg['from'] = user
-    msg['to'] = to
-    msg['Subject'] = subject
-    msg.set_content(body)
-    body_bytes = msg.as_bytes()
-    # view = memoryview(body_bytes)
-    # byte_view = view.cast("B")
+#     msg = EmailMessage()
+#     msg['from'] = user
+#     msg['to'] = to
+#     msg['Subject'] = subject
+#     msg.set_content(body)
+#     body_bytes = msg.as_bytes()
+#     # view = memoryview(body_bytes)
+#     # byte_view = view.cast("B")
 
-    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-        smtp.starttls()
-        smtp.login(user, password)  # Replace with your password
-        smtp.send_message(msg)
-    print("mail send")
+#     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+#         smtp.starttls()
+#         smtp.login(user, password)  # Replace with your password
+#         smtp.send_message(msg)
+#     print("mail send")
 
 
 def send_reservation(info: str):
