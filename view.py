@@ -282,7 +282,7 @@ async def reservation(
         try:
             user_id = 5937741258
             await send_message_to_user(user_id, reservation_info)
-            send_email("მანქანის ჯავშანი", reservation_info, "ninikheladze9@gmail.com")
+            # send_email("მანქანის ჯავშანი", reservation_info, "ninikheladze9@gmail.com")
             # send_reservation(reservation_info)
 
         except Exception:
