@@ -1,7 +1,11 @@
 fastapi[all]
 sqlalchemy
-jose
+pyjwt
+python-jose
+pycryptodome
 python-telegram-bot
 telegram
 smtplib
 pydantic
+oauth2client
+uvicorn
