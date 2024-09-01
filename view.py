@@ -19,6 +19,9 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
+
+from fastapi.middleware.cors import CORSMiddleware
+
 # mail libraries
 # import smtplib
 # from email.message import EmailMessage
@@ -64,7 +67,16 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = FastAPI()
 
-engine = create_engine("sqlite:///ushba3.db")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5500"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+engine = create_engine("sqlite:///ushba.db")
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -201,15 +213,54 @@ def save_files(files: list, carid: int):
 # ----------------------------------------------------------------
 @app.get("/")
 def main():
+    cars = dbsession.query(Car).all()
+    pics = dbsession.query(Picture).all()
+    comments = dbsession.query(Comment).all()
+    car_futures = dbsession.query(Car_future).all()
+    users = dbsession.query(User).all()
+    return_cars = []
+    return_comments = []
+    for i in comments:
+        info = {}
+        for j in users:
+            if i.user_id == j.id:
+                info["name"] = j.name
+                break
+        info["text"] = i.comment_text
+        return_comments.append(info)
+        
+
+    for i in cars:
+        car = {}
+        car["id"] = i.id
+        car["name"] = i.name
+        car["year"] = i.year
+        car["fuel_type"] = i.fuel_type
+        car["engine_type"] = i.engine_type
+        car["transmision"] = i.transmision
+        car["seat_amount"] = i.seat_amount
+        car["doors_amount"] = i.doors_amount
+        car["max_weight"] = i.max_weight
+        car["daily_price"] = i.daily_price
+        car["futures"] = [future.future_name for future in car_futures if future.car_id == i.id]
+        car["pics"] = [pic.path for pic in pics if pic.car_id == i.id]
+        return_cars.append(car)
+    
+    return_data = [return_cars, return_comments]
+
+    if return_data:
+        return return_data
+
     return {"info":"main_page"}
+
+
 @app.get('/comments')
 def main_page():
     commnets = dbsession.query(Comment).where(Comment.show_comment == True).all()
     cars = dbsession.query(Car).all()
 
-
-
     return {"cooments":commnets,"cars":cars}
+
 
 @app.post('/comment')
 async def add_comment(name: str,number:str, comment: str):
@@ -225,19 +276,42 @@ async def add_comment(name: str,number:str, comment: str):
     else:
         return {"info": "კომენტარი ვერ დაემატება რადგან ის ჩვენი მომხმარებელი არ არის"}
 
+
 # es unda shevasworo
 @app.get('/cars')
 def cars():
     cars = dbsession.query(Car).all()
-    print(type(cars[0]))
-    return {"cars": cars}
+    pics = dbsession.query(Picture).all()
+    # data_to_return = {}
 
-@app.get('/cars/{carID}')
+    if cars:
+        return {"cars": cars,"pics":pics}
+    else:
+        return {"cars": None}
+
+
+
+@app.get('/cars/{carid}')
 def car(carid: int):
     car = dbsession.query(Car).where(Car.id == carid).first()
-    pics = dbsession.query(Picture).where(Picture.car_id == carid).all()
+    car_future = dbsession.query(Car_future).where(Car_future.car_id == carid).all()
+    # print(car)
+    car_info = {
+        "name": car.name,
+        "price": car.daily_price,
+        "year":car.year,
+        "fuel type":car.fuel_type,
+        "engine type": car.engine_type,
+        "transmition" : car.transmision,
+        "door" : car.doors_amount,
+        "seat": car.seat_amount
+    }
+    futures = [info.future_name for info in car_future]
 
-    return {"car":car,"pics":[i.path for i in pics]}
+    pics = dbsession.query(Picture).where(Picture.car_id == carid).all()
+    if not car:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="მანქანა არ არსებობს")
+    return {"car":car_info,"pics":[i.path for i in pics], "futures":futures}
 
 
 
@@ -253,7 +327,9 @@ async def reservation(
         pickup_location: str,
         return_location: str,
         extra_info: str):
-    if user_age>=25:
+    if user_age<25:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="დაჯავშნა შეუძლებელია")
+    else:
         reservation_id = random.randint(1, 1341342134)
         reservation_details_id = random.randint(1, 1341342134)
         user_id = random.randint(1, 1341342134)
@@ -293,14 +369,20 @@ async def reservation(
 async def reservation(name: str, phone_number:str):
     user = dbsession.query(User).where(User.name==name and User.phone==phone_number).first()
     data = dbsession.query(Reservation).where(Reservation.user_id==user.id).all()
+    cars = []
+    for i in data:
+        dt = dbsession.query(Car).where(Car.id == i.user_id).all()
+        cars.append(dt)
     if data:
-        return {"reservation info" : data}
-
+        return {"reservation info" : [data,cars]}
+    else:
+        return {"reservation info": "empty"}
 
 
 
 @app.post("/admin_gate")
 async def admin_gate(form_data: OAuth2PasswordRequestForm = Depends()):
+    print(form_data.username, form_data.password)
     admin_username = authenticate_admin(form_data.username, form_data.password)
     if not admin_username:
         raise HTTPException(
@@ -314,9 +396,12 @@ async def admin_gate(form_data: OAuth2PasswordRequestForm = Depends()):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+
+
 @app.get('/admin')
 async def admin(current_admin: str = Depends(get_current_admin)):
         return {"info":"აქ გამოჩნდება ყველა გვერდის ლინკი რაც სამართავია ადმინ პანელიდან"}
+
 
 
 @app.get('/admin/cars')
@@ -324,14 +409,21 @@ def admin_all_cars(current_admin: str = Depends(get_current_admin)):
     cars = dbsession.query(Car).all()
     return {"cars": cars}
 
+
 @app.get('/admin/car/{carid}')
-def admin_all_cars(carid: int, current_admin: str = Depends(get_current_admin)):
+def admin_car(carid: int, current_admin: str = Depends(get_current_admin)):
 
     car = dbsession.query(Car).where(Car.id==carid).one()
-    pics = dbsession.query(Picture).where(Picture.car_id == carid).all()
+    futures = dbsession.query(Car_future).where(Car_future.car_id==car.id).all()
+    if car:
+        pics = dbsession.query(Picture).where(Picture.car_id == carid).all()
 
-    return {"car": car, "pics": [i.path for i in pics]}
-    
+        return {"car": car, "pics": [i.path for i in pics],"futures":futures}
+    else:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="მანქანა არ არსებობს")
+
+
+
 @app.post('/admin/car')
 def add_cars(   
     name: str,
@@ -342,16 +434,21 @@ def add_cars(
     seat_amount: int,
     doors_amount: int,
     max_weight: int,
-    future_name: str,
+    future_name: List[str],
+    future_price: List[int],
     daily_price: int,
     pics: List[UploadFile] = File(...),
     current_admin: str = Depends(get_current_admin)
 ):
     print(current_admin)
     carId = random.randint(1,133123)
-    futureId = random.randint(1,133123)
+    print(future_price,future_name)
+    
     car = Car(carId,name,year,fuel_type,engine_type,transmision,seat_amount,doors_amount,max_weight,daily_price)
-    future = Car_future(futureId,carId,future_name)
+    for i in range(0,len(future_name)):
+        futureId = random.randint(1,133123)
+        print(future_name[i],f":{type(future_name[i])}, price {future_price[i]}")
+        future = Car_future(id=futureId,car_id=carId,future_name=future_name[i],future_price=int(future_price[i]))
     dbsession.add(future)
     dbsession.add(car)
         
@@ -361,6 +458,21 @@ def add_cars(
 
     dbsession.commit()
     return {"INFO":"DATA SAVED  "}
+
+
+@app.delete('/admin/car/{carid}')
+def admin_delete_car(carid: int, current_admin: str = Depends(get_current_admin)):
+    car = dbsession.query(Car).where(Car.id == carid).one()
+    if car:
+        dbsession.execute(delete(Car).where(Car.id == carid))
+        dbsession.commit()
+        return HTTPException(status_code=status.HTTP_200_OK,detail="მანქანა წაშლილია")
+    else:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="მანქანა არ არსებობს")
+    # pics = dbsession.query(Picture).where(Picture.car_id == carid).all()
+
+
+
 
 @app.get('/admin/reservations')
 async def show_reservations(current_admin: str = Depends(get_current_admin)):
@@ -378,7 +490,9 @@ async def see_reservationn(reservation_id:int, current_admin: str = Depends(get_
             return reservation
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="მსგავსი ჯავშანი არ არსებობს")
-        
+
+
+
 @app.post('/admin/reservations/{reservaion_id}')
 async def submit_reservation(reservation_id: int, submit: bool, current_admin: str = Depends(get_current_admin)):
         print(current_admin)

@@ -91,15 +91,17 @@ class Car_future(Base):
     future_id = Column('car_future_id', Integer, nullable=False, primary_key=True)
     car_id = Column("car_id", Integer, ForeignKey('Car.car_id'), nullable=True)
     future_name = Column('future_name', String, nullable=True)
+    future_price = Column("future_price", Integer,nullable=True)
 
     car = relationship('Car', backref='car_future')
 
-    def __init__(self, id: int, car_id: int, future_name:str):
+    def __init__(self, id: int, car_id: int, future_name:str,future_price: int):
         self.future_id = id
         self.car_id = car_id
         self.future_name = future_name
+        self.future_price = future_price
     def __repr__(self):
-        return f"future_id:{self.future_id} car_id:{self.car_id} future_name:{self.future_name}"
+        return f"future_id:{self.future_id} car_id:{self.car_id} future_name:{self.future_name}  future_price:{self.future_price}"
 
 
 class Picture(Base):
@@ -122,24 +124,7 @@ class Picture(Base):
     def __repr__(self):
         return f"id:{self.picture_id} car_id:{self.car_id} path:{self.path}, show_index:{self.show_index}"
 
-class Video(Base):
 
-    __tablename__ = "Video"
-
-    video_id = Column('video_id', Integer, nullable=False, primary_key=True)
-    reservation_id = Column("reservation_id", Integer, ForeignKey("Reservation.reservation_id"), nullable=False)
-    path = Column('path', String, nullable=False)
-
-    car = relationship('Reservation', backref='Video')
-
-    def __init__(self, id: int, reservation_id: int, path: str, show_index: int ):
-        self.video_id = id
-        self.reservation_id = reservation_id
-        self.path = path
-        self.show_index = show_index
-
-    def __repr__(self):
-        return f"id:{self.video_id} car_id:{self.reservation_id} path:{self.path}, show_index:{self.show_index}"
 
 class Reservation(Base):
 
@@ -216,7 +201,7 @@ class Comment(Base):
         return f"id:{self.id} user_id:{self.user_id} comment_text:{self.comment_text} comment_date:{self.date} comment_show:{self.show_comment}"
 
 
-# connection_string = "sqlite:///ushba3.db"
+# connection_string = "sqlite:///ushba.db"
 # engine = create_engine(connection_string, echo=True)
 # Base.metadata.create_all(bind=engine, checkfirst=True)
 # file already created do not uncomment it blux  !!!!!
